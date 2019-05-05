@@ -1,0 +1,16 @@
+version: '2.3'
+services:
+    tensorflow:
+        image: 'dbuades/tensorflow:2.0.0a0-gpu-py3'
+        restart: unless-stopped
+        runtime: nvidia
+        container_name: tensorflow
+        ports:
+          - '2222:2222'
+          - '6006:6006'
+          - '8888:8888'
+        volumes:
+          - tensorflow:/shared
+
+volumes:
+  tensorflow:
