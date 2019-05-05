@@ -1,5 +1,3 @@
-# Tensorflow Docker
-
 - Run it as your desired user (instead of root)
 - JupterLab with Plotly extensions.
 - Tensorboard initializated by default.
