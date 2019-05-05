@@ -1,7 +1,8 @@
 # Tensorflow Docker
 
 - Run it as your desired user (instead of root)
-- JupterLab and Tensorboard
+- JupterLab with Plotly extensions.
+- Tensorboard initializated by default.
 - SSH support for connecting remotely with VS Code (https://code.visualstudio.com/docs/remote/ssh)
 
 ## Instructions
