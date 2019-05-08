@@ -4,13 +4,12 @@ services:
         image: 'dbuades/tensorflow:2.0.0a0-gpu-py3'
         restart: unless-stopped
         runtime: nvidia
-        container_name: tensorflow
+        container_name: flowy
         ports:
-          - '2222:2222'
-          - '6006:6006'
-          - '8888:8888'
+          - '2222:2222' #SSH for VS Code
+          - '8888:8888' #JupyterNotebook
+          - '6006:6006' #TensorBoard
         volumes:
           - tensorflow:/shared
-
 volumes:
   tensorflow:

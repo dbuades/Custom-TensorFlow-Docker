@@ -17,65 +17,68 @@ ARG UPWD
 ARG JUPYTER_PWD
 ARG SSH_PUB_KEY
 ARG SSH_PORT
+ARG GIT_UNAME
+ARG GIT_MAIL
+ARG GIT_KEY
 
 #### Install NodeJS for Jupyterlab extensions ####
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends wget \
-  && wget https://deb.nodesource.com/setup_11.x -O /tmp/node_install.sh \
-  && chmod +x /tmp/node_install.sh \
-  && bash /tmp/node_install.sh \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends nodejs
+ && apt-get install -y --no-install-recommends wget \
+ && wget https://deb.nodesource.com/setup_11.x -O /tmp/node_install.sh \
+ && chmod +x /tmp/node_install.sh \
+ && bash /tmp/node_install.sh \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends nodejs
 
 # Fix pip after NodeJS installation
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-  && python3 get-pip.py --force-reinstall \
-  && pip3 --no-cache-dir install --upgrade pip setuptools
+ && python3 get-pip.py --force-reinstall \
+ && pip3 --no-cache-dir install --upgrade pip setuptools
 ####
 
 ### Install requirements ####
 # System packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-     libhdf5-serial-dev \
-     git \
-     htop \
-     nano \
-     curl \
-     graphviz \
-     tzdata \
-     sudo \
-     openssh-server \
+    libhdf5-serial-dev \
+    git \
+    htop \
+    nano \
+    curl \
+    graphviz \
+    tzdata \
+    sudo \
+    openssh-server \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Python libraries
 RUN pip3 --no-cache-dir install --upgrade \
-     feather-format \
-     matplotlib \
-     pydot \
-     h5py \
-     numba \
-     tables \
-     joblib \
-     jupyter \
-     ipywidgets \
-     scikit-learn \
-     swifter \
-     ipython_memory_usage \
-     plotly \
-     pandas \
-     pyspark \
-     line_profiler \
-     memory_profiler \
-     cufflinks \
-     jupyterlab
+    feather-format \
+    matplotlib \
+    pydot \
+    h5py \
+    numba \
+    tables \
+    joblib \
+    jupyter \
+    ipywidgets \
+    scikit-learn \
+    swifter \
+    ipython_memory_usage \
+    plotly \
+    pandas \
+    pyspark \
+    line_profiler \
+    memory_profiler \
+    cufflinks \
+    jupyterlab
 ####
   
     
 #### Configure user ####
 RUN groupadd -o -g $GID $UNAME \
-    && useradd -m -o -u $UID -g $GID $UNAME \
-    && echo "$UNAME:$UPWD" | chpasswd \
-    && usermod -aG sudo $UNAME
+  && useradd -m -o -u $UID -g $GID $UNAME \
+  && echo "$UNAME:$UPWD" | chpasswd \
+  && usermod -aG sudo $UNAME
 ####
 
 
@@ -88,16 +91,29 @@ RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 
-# Copy the public key
-RUN mkdir -p /home/$UNAME/.ssh && \
-    echo "$SSH_PUB_KEY" > /home/$UNAME/.ssh/authorized_keys && \
-    chmod 600 /home/$UNAME/.ssh/authorized_keys && \
-    chmod 0700 /home/$UNAME/.ssh && \
-    chown -R $UID:$GID /home/$UNAME/.ssh
+# Copy the public key and the Github key
+RUN mkdir -p /home/$UNAME/.ssh \
+  $$ echo "$SSH_PUB_KEY" > /home/$UNAME/.ssh/authorized_keys \
+  $$ echo "$GIT_KEY" > /home/$UNAME/.ssh/id_github \
+  $$ chmod 0600 /home/$UNAME/.ssh/* \
+  $$ chmod 0700 /home/$UNAME/.ssh \
+  $$ chown -R $UID:$GID /home/$UNAME/.ssh
 
 # Own /etc/ssh or else, we can't initiate ssh as non-root
 RUN mkdir /var/run/sshd && chown -R $UID:$GID /etc/ssh
 #####
+
+
+#### Configure GitHub #####
+RUN git config --global user.name "$GIT_UNAME" \
+  && git config --global user.email "$GIT_MAIL" \
+  && echo " \
+       Host github.com \n \
+              Hostname github.com \n \
+              User git \n \
+              IdentityFile ~/.ssh/id_github \
+       " > /home/$UNAME/.ssh/config
+####
 
 
 #### Configure JupyterLab ####
@@ -110,14 +126,13 @@ RUN mkdir /shared \
 
 # Install extensions
 RUN export NODE_OPTIONS=--max-old-space-size=4096 \
-  && jupyter labextension install @jupyter-widgets/jupyterlab-manager --no-build \
-  && jupyter labextension install plotlywidget --no-build \
-  && jupyter labextension install @jupyterlab/plotly-extension --no-build \
-  && jupyter labextension install jupyterlab-chart-editor --no-build \
-  && jupyter lab build \
-  && unset NODE_OPTIONS
+ && jupyter labextension install @jupyter-widgets/jupyterlab-manager --no-build \
+ && jupyter labextension install plotlywidget --no-build \
+ && jupyter labextension install @jupyterlab/plotly-extension --no-build \
+ && jupyter labextension install jupyterlab-chart-editor --no-build \
+ && jupyter lab build \
+ && unset NODE_OPTIONS
 ####
-
 
 # Expose ports
 EXPOSE $SSH_PORT

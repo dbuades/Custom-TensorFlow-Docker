@@ -4,6 +4,8 @@
 TF_VERSION=2.0.0a0-gpu-py3
 USER_PASS=*****
 JUPYTER_PASS=*****
+GIT_UNAME=*****
+GIT_MAIL=****
 
 # Build
 docker build \
@@ -15,4 +17,7 @@ docker build \
 	--build-arg GID="$(id -g)" \
 	--build-arg JUPYTER_PWD="$(python -c "from hash_pass import hash_pass; print(hash_pass('$JUPYTER_PASS'))")" \
 	--build-arg SSH_PUB_KEY="$(cat ~/.ssh/id_rsa.pub)" \
-	--build-arg SSH_PORT="2222" .
+	--build-arg SSH_PORT="2222" \
+        --build-arg GIT_UNAME=$GIT_UNAME \
+        --build-arg GIT_MAIL=$GIT_MAIL \
+        --build-arg GIT_KEY="$(cat ~/.ssh/id_github)" .
