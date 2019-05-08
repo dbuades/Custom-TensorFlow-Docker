@@ -119,10 +119,10 @@ RUN git config --global user.name "$GIT_UNAME" \
 #### Configure JupyterLab ####
 # Create folders for the files and set the entry password (so we don't need to enter a token the first time)
 RUN mkdir /shared \ 
-  && chown $UNAME /shared && chmod a+rwx /shared \
-  && mkdir /home/$UNAME/.jupyter \
-  && echo "c.NotebookApp.password = u'$JUPYTER_PWD'" >> /home/$UNAME/.jupyter/jupyter_notebook_config.py \
-  && chown $UNAME -R /home/$UNAME/.jupyter && chmod a+rwx -R /home/$UNAME/.jupyter
+ && chown $UNAME /shared && chmod a+rwx /shared \
+ && mkdir /home/$UNAME/.jupyter \
+ && echo "c.NotebookApp.password = u'$JUPYTER_PWD'" >> /home/$UNAME/.jupyter/jupyter_notebook_config.py \
+ && chown $UNAME -R /home/$UNAME/.jupyter && chmod a+rwx -R /home/$UNAME/.jupyter
 
 # Install extensions
 RUN export NODE_OPTIONS=--max-old-space-size=4096 \
